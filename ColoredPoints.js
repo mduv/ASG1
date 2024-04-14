@@ -11,7 +11,7 @@ var VSHADER_SOURCE =
 // Fragment shader program
 var FSHADER_SOURCE =
     'precision mediump float;\n' +
-    'uniform vec4 u_FragColor;\n' +  // uniform変数
+    'uniform vec4 u_FragColor;\n' +  
     'void main() {\n' +
     '  gl_FragColor = u_FragColor;\n' +
     '}\n';
@@ -101,6 +101,11 @@ function addActionForHtmlUI(){
 
     document.getElementById('drawPicutre').addEventListener('click', drawStarPattern);
 
+    document.getElementById('redSlide').addEventListener('mouseup', updateBrushColor);
+    document.getElementById('greenSlide').addEventListener('mouseup', updateBrushColor);
+    document.getElementById('blueSlide').addEventListener('mouseup', updateBrushColor);
+    document.getElementById('alphaSlide').addEventListener('input', updateBrushColor); // Immediate feedback on alpha change
+
 
 }
 
@@ -186,9 +191,6 @@ function main() {
 var g_shapesList = [];
 
 
-// var g_points = [];  // The array for the position of a mouse press
-// var g_colors = [];  // The array to store the color of a point
-// var g_sizes = [];
 
 function click(ev) {
     let [x, y] = convertCoordEventToWebGL(ev);  // extract the event click and return in in webgl coord
@@ -217,8 +219,8 @@ function click(ev) {
 }
 
 function convertCoordEventToWebGL(ev){
-    var x = ev.clientX;                                         // x coordinate of a mouse pointer
-    var y = ev.clientY;                                         // y coordinate of a mouse pointer
+    var x = ev.clientX;                                         
+    var y = ev.clientY;                                         
     var rect = ev.target.getBoundingClientRect();
 
     x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
@@ -289,7 +291,6 @@ function drawStarPattern() {
         });
     }
 
-    // Draw all triangles
     triangles.forEach(tri => {
         drawTri(tri.vertices, tri.color);
     });
@@ -309,3 +310,17 @@ function drawTri(vertices, color) {
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
+
+function updateBrushColor() {
+    let red = document.getElementById('redSlide').value / 100;
+    let green = document.getElementById('greenSlide').value / 100;
+    let blue = document.getElementById('blueSlide').value / 100;
+    let alpha = parseFloat(document.getElementById('alphaSlide').value); // Get alpha value from slider
+
+    g_selectedColor = [red, green, blue, alpha]; // Update global color with alpha
+}
+
+document.getElementById('redSlide').addEventListener('mouseup', updateBrushColor);
+document.getElementById('greenSlide').addEventListener('mouseup', updateBrushColor);
+document.getElementById('blueSlide').addEventListener('mouseup', updateBrushColor);
+document.getElementById('alphaSlide').addEventListener('input', updateBrushColor); // Immediate feedback on alpha change

@@ -8,24 +8,21 @@ class Triangle{
     }
 
     render(){
-        var xy   = this.position;                                       // set xy to the ith point's pos field
-        var rgba = this.color;                                          // set rgba to the ith point's color field
-        var size = this.size;                                           // set size to the ith point's size field
+        var xy   = this.position;                                       
+        var rgba = this.color;                                          
+        var size = this.size;                                          
  
-        // gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);            // Pass the position of point to a_Position
-        gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);  // Pass the color of point to u_FragColor
-        gl.uniform1f(u_Size, size);                                     // Pass the size of point to u_Size
+        gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]); 
+        gl.uniform1f(u_Size, size);                                     
                                 
-        var d = this.size/200.0;                                        // side length
-        drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0], xy[1]+d]);   // Draw triangle with selected verts
+        var d = this.size/200.0;                                        
+        drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0], xy[1]+d]);   
     }
 }
 
 function drawTriangle(vertices) {
-    //   var vertices = new Float32Array([
-    //     0, 0.5,   -0.5, -0.5,   0.5, -0.5
-    //   ]);
-    var n = 3; // The number of vertices
+
+    var n = 3; 
 
     // Create a buffer object
     var vertexBuffer = gl.createBuffer();
