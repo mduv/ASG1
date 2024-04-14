@@ -19,6 +19,7 @@ var FSHADER_SOURCE =
 // Constants
 const POINT = 0;
 const TRIANGLE = 1;
+const CIRCLE = 2;
 
 // Global variables
 let canvas;
@@ -27,6 +28,7 @@ let a_Position;
 let u_FragColor;
 let u_Size;
 let g_selectedType = POINT;
+let g_selectedSides = 3;
 
 function setupWebGL() {
     // Retrieve <canvas> element
@@ -84,6 +86,7 @@ function addActionForHtmlUI(){
     // Buttons that change cursor shape directly
     document.getElementById('pointButton').onclick = function() { g_selectedType = POINT; }; 
     document.getElementById('triButton').onclick = function() { g_selectedType = TRIANGLE; };
+    document.getElementById('circleButton').onclick = function() { g_selectedType = CIRCLE; };
 
     // Sliders
     document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value/100; });
@@ -92,6 +95,9 @@ function addActionForHtmlUI(){
 
     // Slider to change the size
     document.getElementById('sizeSlide').addEventListener('mouseup', function() { g_selectedSize = this.value; });
+
+    document.getElementById('sideSlide').addEventListener('mouseup',
+        function() { g_selectedSides = this.value; });
 }   
 
 
@@ -131,9 +137,12 @@ function click(ev) {
     let point;
     if(g_selectedType == POINT){
         point = new Point();
+    } else if((g_selectedType == TRIANGLE)){
+        point = new Triangle();
     }
     else {
-        point = new Triangle();
+        point = new Circle();
+        point.sides = g_selectedSides;
     }
 
 
@@ -178,6 +187,9 @@ function renderAllShapes(){
                    " ms: " + Math.floor(duration) + 
                    " fps: " + Math.floor(10000/duration), 
                    "numdot");
+
+    sendTextToHTML(g_selectedSides, 
+    "numside");
 }
 
 function sendTextToHTML(text, htmlID){ 
