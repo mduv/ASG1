@@ -98,7 +98,66 @@ function addActionForHtmlUI(){
 
     document.getElementById('sideSlide').addEventListener('mouseup',
         function() { g_selectedSides = this.value; });
-}   
+
+    document.getElementById('drawPicutre').addEventListener('click', drawStarPattern);
+
+
+}
+
+function drawMountainLandscape() {
+    // Clear previous shapes
+    g_shapesList = [];
+
+    // Define colors for mountains, sun, and water
+    const mountainColors = [
+        [0.5, 0.5, 0.5, 1.0],  // Dark gray
+        [0.6, 0.6, 0.6, 1.0]   // Light gray
+    ];
+    const sunColor = [1.0, 0.9, 0.0, 1.0];  // Yellow
+    const waterColor = [0.0, 0.2, 0.8, 1.0];  // Blue
+
+    // Add mountains
+    for (let i = -2; i <= 2; i++) {
+        const baseX = i * 0.2; // Base X position for each mountain
+        const peakY = 0.1 + Math.abs(i) * 0.1;  // Peak Y position varies
+        let triangle1 = new Triangle();
+        let triangle2 = new Triangle();
+        triangle1.position = [baseX, -0.3, baseX + 0.1, peakY, baseX + 0.2, -0.3];
+        triangle2.position = [baseX + 0.1, -0.3, baseX + 0.2, peakY, baseX + 0.3, -0.3];
+        triangle1.color = mountainColors[i % 2];
+        triangle2.color = mountainColors[(i + 1) % 2];
+        g_shapesList.push(triangle1);
+        g_shapesList.push(triangle2);
+    }
+
+    // Add sun using 8 triangles forming a circle
+    for (let i = 0; i < 8; i++) {
+        const angle = Math.PI / 4 * i;
+        const nextAngle = Math.PI / 4 * (i + 1);
+        let triangle = new Triangle();
+        triangle.position = [
+            0, 0.6,  // Center of the sun
+            0.1 * Math.cos(angle), 0.6 + 0.1 * Math.sin(angle),  // Radius of sun
+            0.1 * Math.cos(nextAngle), 0.6 + 0.1 * Math.sin(nextAngle)
+        ];
+        triangle.color = sunColor;
+        g_shapesList.push(triangle);
+    }
+
+    // Add water
+    for (let i = -1; i <= 1; i++) {
+        const baseX = i * 0.3;
+        let triangle = new Triangle();
+        triangle.position = [baseX, -0.8, baseX + 0.3, -0.5, baseX + 0.6, -0.8];
+        triangle.color = waterColor;
+        g_shapesList.push(triangle);
+    }
+
+    // Render all shapes
+    renderAllShapes();
+}
+
+
 
 
 function main() {
@@ -199,4 +258,54 @@ function sendTextToHTML(text, htmlID){
         return;
     }
     htmlElement.innerHTML = text;
+}
+
+function drawStarPattern() {
+    const numTriangles = 20; // Total triangles in the star
+    const radius = 0.5; // Radius of the circle where the tips of the star reach
+    let triangles = [];
+
+    for (let i = 0; i < numTriangles; i++) {
+        const angle = 2 * Math.PI * i / numTriangles;
+        const nextAngle = 2 * Math.PI * (i + 1) / numTriangles;
+        
+        // Center of the canvas
+        const center = [0, 0];
+
+        // Vertices of the triangle
+        const firstVertex = [center[0] + radius * Math.sin(angle), center[1] + radius * Math.cos(angle)];
+        const secondVertex = [center[0] + radius * Math.sin(nextAngle), center[1] + radius * Math.cos(nextAngle)];
+
+        // Base of the triangle closer to center
+        const baseRadius = radius * 0.5; // Adjust this value to get the desired look
+        const thirdVertex = [
+            center[0] + baseRadius * Math.sin(angle + Math.PI / numTriangles),
+            center[1] + baseRadius * Math.cos(angle + Math.PI / numTriangles)
+        ];
+
+        triangles.push({
+            vertices: [...firstVertex, ...secondVertex, ...thirdVertex],
+            color: [1, 0, 0, 1] // Red color, you can make this dynamic
+        });
+    }
+
+    // Draw all triangles
+    triangles.forEach(tri => {
+        drawTri(tri.vertices, tri.color);
+    });
+}
+
+function drawTri(vertices, color) {
+    var vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_Position);
+
+    var u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3]);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
