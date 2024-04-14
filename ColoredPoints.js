@@ -16,12 +16,17 @@ var FSHADER_SOURCE =
     '  gl_FragColor = u_FragColor;\n' +
     '}\n';
 
+// Constants
+const POINT = 0;
+const TRIANGLE = 1;
+
 // Global variables
 let canvas;
 let gl;
 let a_Position;
 let u_FragColor;
 let u_Size;
+let g_selectedType = POINT;
 
 function setupWebGL() {
     // Retrieve <canvas> element
@@ -76,6 +81,10 @@ function addActionForHtmlUI(){
     document.getElementById('red').onclick = function() { g_selectedColor = [1.0,0.0,0.0,1.0]; };
     document.getElementById('clearButton').onclick = function() { g_shapesList = []; renderAllShapes();}; 
 
+    // Buttons that change cursor shape directly
+    document.getElementById('pointButton').onclick = function() { g_selectedType = POINT; }; 
+    document.getElementById('triButton').onclick = function() { g_selectedType = TRIANGLE; };
+
     // Sliders
     document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value/100; });
     document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value/100; });
@@ -98,6 +107,7 @@ function main() {
 
     // Register function (event handler) to be called on a mouse press
     canvas.onmousedown = click;
+    canvas.onmousemove = function(ev) { if(ev.buttons==1) {click(ev)} }; 
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -118,31 +128,21 @@ var g_shapesList = [];
 function click(ev) {
     let [x, y] = convertCoordEventToWebGL(ev);  // extract the event click and return in in webgl coord
 
-    let point = new Point();
+    let point;
+    if(g_selectedType == POINT){
+        point = new Point();
+    }
+    else {
+        point = new Triangle();
+    }
+
+
+
+
     point.position=[x,y];
     point.color = g_selectedColor.slice();
     point.size = g_selectedSize;
     g_shapesList.push(point);
-
-
-
-    // Store the coordinates to g_points array
-    // g_points.push([x, y]);
-
-    // // Store the color to g_colors array
-    // g_colors.push(g_selectedColor.slice());
-
-    // // store g_size
-    // g_sizes.push(g_selectedSize);
-
-    // Store the coordinates to g_points array
-    // if (x >= 0.0 && y >= 0.0) {      // First quadrant
-    //     g_colors.push([1.0, 0.0, 0.0, 1.0]);  // Red
-    // } else if (x < 0.0 && y < 0.0) { // Third quadrant
-    //     g_colors.push([0.0, 1.0, 0.0, 1.0]);  // Green
-    // } else {                         // Others
-    //     g_colors.push([1.0, 1.0, 1.0, 1.0]);  // White
-    // }
 
     renderAllShapes();
 
@@ -159,6 +159,9 @@ function convertCoordEventToWebGL(ev){
 }
 
 function renderAllShapes(){
+    var startTime = performance.now();
+
+
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -169,4 +172,19 @@ function renderAllShapes(){
     for (var i = 0; i < len; i++) {
         g_shapesList[i].render();
     }
+
+    var duration = performance.now() - startTime;
+    sendTextToHTML("numdot " + len + 
+                   " ms: " + Math.floor(duration) + 
+                   " fps: " + Math.floor(10000/duration), 
+                   "numdot");
+}
+
+function sendTextToHTML(text, htmlID){ 
+    var htmlElement = document.getElementById(htmlID);
+    if(!htmlElement){
+        console.log("failed to get " + htmlID + "from HTML");
+        return;
+    }
+    htmlElement.innerHTML = text;
 }
