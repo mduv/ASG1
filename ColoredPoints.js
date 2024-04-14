@@ -28,7 +28,7 @@ let a_Position;
 let u_FragColor;
 let u_Size;
 let g_selectedType = POINT;
-let g_selectedSides = 3;
+let g_selectedSides = 14;
 
 function setupWebGL() {
     // Retrieve <canvas> element
